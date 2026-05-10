@@ -1,0 +1,30 @@
+# Development
+
+- **Package manager**: `uv` (not pip). Use `uv sync` to install, `uv run pytest` to test.
+- **Python**: 3.12 (`.python-version`)
+- **No lint/typecheck config** (ruff.toml, pyrightconfig.json) — tools are in dev dependencies but not configured yet.
+
+# Structure
+
+- `src/osi/` — thin entry point wrapper; re-exports CLI from `osi-core`
+- `packages/core/` — main implementation (`osi-core` package)
+- Dev deps live in root `pyproject.toml`; core dev deps declared in `packages/core/pyproject.toml`
+
+# Commands
+
+```bash
+uv sync                    # install all deps
+uv run pytest              # run all tests
+uv run pytest packages/core/tests/test_readers/test_osi.py  # single test file
+```
+
+CLI (via `osi-core` entry point):
+```bash
+osi-core validate metrics.yaml --format osi
+osi-core translate metrics.yaml --from osi --to metricflow
+osi-core diff old.yaml new.yaml
+```
+
+# Testing
+
+Fixtures live in `packages/core/tests/fixtures/`. Snapshot tests use `syrupy` — run `pytest --snapshot-update` to update snapshots.

@@ -1,0 +1,57 @@
+version: "0.1.1"
+semantic_model:
+  - name: ecommerce_analytics
+    description: E-commerce sales and customer analytics
+    datasets:
+      - name: users
+        source: sales.public.users
+        primary_key: [id]
+        fields:
+          - name: id
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: id
+          - name: name
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: name
+      - name: orders
+        source: sales.public.orders
+        primary_key: [id]
+        fields:
+          - name: id
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: id
+          - name: user_id
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: user_id
+          - name: amount
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: amount
+    relationships:
+      - name: orders_to_users
+        from: orders
+        to: users
+        from_columns: [user_id]
+        to_columns: [id]
+    metrics:
+      - name: user_count
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: COUNT(DISTINCT users.id)
+        description: Total number of users
+      - name: total_orders
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: COUNT(orders.id)
+        description: Total number of orders
