@@ -1,0 +1,70 @@
+cubes:
+  - name: orders
+    sql_table: public.orders
+    primary_key: id
+    dimensions:
+      - name: id
+        sql: ${CUBE}.id
+        type: number
+        primary_key: true
+      - name: order_date
+        sql: ${CUBE}.order_date
+        type: time
+      - name: status
+        sql: ${CUBE}.status
+        type: string
+      - name: customer_id
+        sql: ${CUBE}.customer_id
+        type: number
+      - name: product_id
+        sql: ${CUBE}.product_id
+        type: number
+      - name: amount
+        sql: ${CUBE}.amount
+        type: number
+    measures:
+      - name: total
+        sql: amount
+        type: sum
+      - name: order_count
+        type: count
+    joins:
+      - name: customers
+        sql: "${CUBE}.customer_id = ${customers}.id"
+        relationship: many_to_one
+      - name: products
+        sql: "${CUBE}.product_id = ${products}.id"
+        relationship: many_to_one
+
+  - name: customers
+    sql_table: public.customers
+    primary_key: id
+    dimensions:
+      - name: id
+        sql: ${CUBE}.id
+        type: number
+        primary_key: true
+      - name: name
+        sql: ${CUBE}.name
+        type: string
+      - name: first_order_date
+        sql: ${CUBE}.first_order_date
+        type: time
+      - name: tier
+        sql: ${CUBE}.tier
+        type: string
+
+  - name: products
+    sql_table: public.products
+    primary_key: id
+    dimensions:
+      - name: id
+        sql: ${CUBE}.id
+        type: number
+        primary_key: true
+      - name: category
+        sql: ${CUBE}.category
+        type: string
+      - name: name
+        sql: ${CUBE}.name
+        type: string

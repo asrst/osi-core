@@ -118,6 +118,44 @@ def test_tpcds_reference_validates():
     assert errors == [], f"{path.name} validation errors: {errors}"
 
 
+def _cube_fixtures() -> list[Path]:
+    return list_fixtures("cube")
+
+
+class TestCubeFixturesImport:
+    @pytest.mark.parametrize("path", _cube_fixtures(), ids=lambda p: p.stem)
+    def test_import_to_osi(self, path: Path):
+        from osi_core.converters.cube import CubeImporter
+        data = load_yaml(path)
+        result = CubeImporter().to_osi(data)
+        assert isinstance(result, dict)
+        assert "semantic_model" in result
+        for sm in result["semantic_model"]:
+            assert "datasets" in sm
+            assert len(sm["datasets"]) > 0
+
+    @pytest.mark.parametrize("path", _cube_fixtures(), ids=lambda p: p.stem)
+    def test_imported_osi_validates(self, path: Path):
+        from osi_core.converters.cube import CubeImporter
+        data = load_yaml(path)
+        result = CubeImporter().to_osi(data)
+        errors = validate_schema(result)
+        assert errors == [], f"{path.name} OSI validation errors: {errors}"
+
+
+class TestCubeFixtures:
+    @pytest.mark.parametrize("path", _cube_fixtures(), ids=lambda p: p.stem)
+    def test_parseable(self, path: Path):
+        data = load_yaml(path)
+        assert isinstance(data, dict), f"{path.name} is not a dict"
+
+    @pytest.mark.parametrize("path", _cube_fixtures(), ids=lambda p: p.stem)
+    def test_has_required_keys(self, path: Path):
+        data = load_yaml(path)
+        assert "cubes" in data, f"{path.name} missing 'cubes'"
+        assert isinstance(data["cubes"], list), f"{path.name} 'cubes' must be a list"
+
+
 class TestSnowflakeFixtures:
     @pytest.mark.parametrize("path", _snowflake_fixtures(), ids=lambda p: p.stem)
     def test_parseable(self, path: Path):

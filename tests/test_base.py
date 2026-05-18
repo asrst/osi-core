@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from osi_core.converters.base import BaseConverter
-from osi_core.converters import discover_converters, SnowflakeConverter, GoodDataConverter, DbtMetricFlowConverter
+from osi_core.converters import discover_converters, SnowflakeConverter, GoodDataConverter, DbtMetricFlowConverter, CubeConverter
 
 
 def test_all_converters_are_registered():
@@ -11,10 +11,11 @@ def test_all_converters_are_registered():
     assert "snowflake" in converters
     assert "gooddata" in converters
     assert "dbt_metricflow" in converters
+    assert "cube" in converters
 
 
 class TestBaseConverterContract:
-    @pytest.fixture(params=["snowflake", "gooddata", "dbt_metricflow"])
+    @pytest.fixture(params=["snowflake", "gooddata", "dbt_metricflow", "cube"])
     def converter(self, request: pytest.FixtureRequest) -> BaseConverter:
         return discover_converters()[request.param]
 
@@ -84,6 +85,38 @@ class TestDbtMetricFlowConverterContract:
         mf = DbtMetricFlowConverter()
         result = mf.to_osi(_minimal_metricflow())
         assert isinstance(result, dict)
+
+
+class TestCubeConverterContract:
+    def test_converter_type(self):
+        cc = CubeConverter()
+        assert isinstance(cc, BaseConverter)
+
+    def test_vendor_name(self):
+        assert CubeConverter.VENDOR_NAME == "CUBE"
+
+    def test_from_osi_returns_dict(self):
+        cc = CubeConverter()
+        result = cc.from_osi(_minimal_osi())
+        assert isinstance(result, dict)
+
+    def test_to_osi_returns_dict(self):
+        cc = CubeConverter()
+        result = cc.to_osi(_minimal_cube())
+        assert isinstance(result, dict)
+
+
+def _minimal_cube() -> dict:
+    return {
+        "cubes": [
+            {
+                "name": "test",
+                "sql_table": "public.test_table",
+                "dimensions": [{"name": "id", "sql": "${CUBE}.id", "type": "number"}],
+                "measures": [{"name": "total", "sql": "amount", "type": "sum"}],
+            }
+        ],
+    }
 
 
 class TestGoodDataConverterContract:

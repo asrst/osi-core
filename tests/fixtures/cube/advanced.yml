@@ -1,0 +1,36 @@
+cubes:
+  - name: orders
+    sql_table: public.orders
+    primary_key: id
+    dimensions:
+      - name: id
+        sql: ${CUBE}.id
+        type: number
+        primary_key: true
+      - name: order_date
+        sql: ${CUBE}.order_date
+        type: time
+      - name: status
+        sql: ${CUBE}.status
+        type: string
+      - name: amount
+        sql: ${CUBE}.amount
+        type: number
+    measures:
+      - name: total
+        sql: amount
+        type: sum
+      - name: order_count
+        type: count
+      - name: revenue_ratio
+        type: number
+        sql: "SUM(amount) / NULLIF(SUM(amount), 0)"
+      - name: count_distinct_customers
+        sql: customer_id
+        type: count_distinct
+      - name: revenue_running_total
+        type: number
+        sql: "SUM(amount) OVER (ORDER BY order_date)"
+      - name: double_total
+        type: number
+        sql: "total * 2"
