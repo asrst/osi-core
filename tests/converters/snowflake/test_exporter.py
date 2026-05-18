@@ -437,6 +437,84 @@ class TestSnowflakeExporter:
         assert result["description"] == "A model\nuse this model for analytics"
         assert not any("ai_context" in str(x.message) for x in w)
 
+    def test_dataset_string_ai_context_appended_to_description(self, exporter):
+        model = _minimal_model(
+            datasets=[
+                {
+                    "name": "t",
+                    "source": "db.s.t",
+                    "description": "A dataset",
+                    "ai_context": "use this dataset for reporting",
+                    "fields": [
+                        {
+                            "name": "c",
+                            "expression": {
+                                "dialects": [
+                                    {"dialect": "ANSI_SQL", "expression": "c"}
+                                ]
+                            },
+                            "dimension": {"is_time": False},
+                        }
+                    ],
+                }
+            ]
+        )
+        result = exporter.from_osi(_wrap_osi(model))
+        table = result["tables"][0]
+        assert table["description"] == "A dataset\nuse this dataset for reporting"
+
+    def test_field_string_ai_context_appended_to_description(self, exporter):
+        model = {
+            "name": "m",
+            "datasets": [
+                {
+                    "name": "t",
+                    "source": "db.s.t",
+                    "fields": [
+                        {
+                            "name": "c",
+                            "description": "A column",
+                            "ai_context": "use this column in your analysis",
+                            "expression": {
+                                "dialects": [
+                                    {"dialect": "ANSI_SQL", "expression": "c"}
+                                ]
+                            },
+                            "dimension": {"is_time": False},
+                        }
+                    ],
+                }
+            ],
+        }
+        result = exporter.from_osi(_wrap_osi(model))
+        dim = result["tables"][0]["dimensions"][0]
+        assert dim["description"] == "A column\nuse this column in your analysis"
+
+    def test_model_string_ai_context_becomes_description_when_no_description(self, exporter):
+        model = _minimal_model(ai_context="use this model for analytics")
+        result = exporter.from_osi(_wrap_osi(model))
+        assert result["description"] == "use this model for analytics"
+
+    def test_relationship_string_ai_context_dropped_with_warning(self, exporter):
+        model = _minimal_model(
+            relationships=[
+                {
+                    "name": "r1",
+                    "from": "a",
+                    "to": "b",
+                    "from_columns": ["x"],
+                    "to_columns": ["y"],
+                    "ai_context": "some context",
+                }
+            ]
+        )
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            result = exporter.from_osi(_wrap_osi(model))
+        rel = result["relationships"][0]
+        assert "ai_context" not in rel
+        assert any("ai_context" in str(x.message) for x in w)
+
     def test_field_label_dropped_with_warning(self, exporter):
         model = {
             "name": "m",
