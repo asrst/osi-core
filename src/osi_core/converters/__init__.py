@@ -1,6 +1,11 @@
 from .base import BaseConverter
+from .snowflake import SnowflakeConverter
+from .gooddata import GoodDataConverter
 
-_CONVERTERS: dict[str, BaseConverter] = {}
+_CONVERTERS: dict[str, BaseConverter] = {
+    "snowflake": SnowflakeConverter(),
+    "gooddata": GoodDataConverter(),
+}
 
 
 def register_converter(name: str, converter: BaseConverter) -> None:
@@ -11,4 +16,10 @@ def discover_converters() -> dict[str, BaseConverter]:
     return dict(_CONVERTERS)
 
 
-__all__ = ["BaseConverter", "register_converter", "discover_converters"]
+__all__ = [
+    "BaseConverter",
+    "SnowflakeConverter",
+    "GoodDataConverter",
+    "register_converter",
+    "discover_converters",
+]
