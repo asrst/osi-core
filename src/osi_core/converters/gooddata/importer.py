@@ -17,7 +17,6 @@ from .models import (
     gd_model_from_dict,
 )
 
-
 OSI_VERSION = "0.1.1"
 
 
@@ -31,112 +30,113 @@ class GoodDataImporter(BaseConverter):
         model_name = kwargs.get("model_name", "gooddata_model")
         model_description = kwargs.get("model_description", "")
         data_source_id = kwargs.get("data_source_id")
-        return self._convert(model, model_name, model_description, data_source_id)
+        return gooddata_to_osi(model, model_name, model_description, data_source_id)
 
     def from_osi(self, osi_model: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
         raise NotImplementedError("GoodData export uses GoodDataExporter")
 
-    def _convert(
-        self,
-        model: GdDeclarativeModel,
-        model_name: str = "gooddata_model",
-        model_description: str = "",
-        data_source_id: str | None = None,
-    ) -> dict[str, Any]:
-        osi_datasets = []
-        osi_relationships = []
 
-        attr_source_col_map: dict[str, dict[str, str]] = {}
-        for ds in model.ldm.datasets:
-            attr_source_col_map[ds.id] = {a.id: a.source_column for a in ds.attributes}
+def gooddata_to_osi(
+    model: GdDeclarativeModel,
+    model_name: str = "gooddata_model",
+    model_description: str = "",
+    data_source_id: str | None = None,
+) -> dict[str, Any]:
+    """Convert a GoodData declarative model to an OSI semantic model dict."""
+    osi_datasets = []
+    osi_relationships = []
 
-        for ds in model.ldm.datasets:
-            osi_ds, rels = self._convert_dataset(ds, attr_source_col_map)
-            osi_datasets.append(osi_ds)
-            osi_relationships.extend(rels)
+    attr_source_col_map: dict[str, dict[str, str]] = {}
+    for ds in model.ldm.datasets:
+        attr_source_col_map[ds.id] = {a.id: a.source_column for a in ds.attributes}
 
-        for di in model.ldm.date_instances:
-            osi_datasets.append(self._convert_date_instance(di))
+    for ds in model.ldm.datasets:
+        osi_ds, rels = _convert_dataset(ds, attr_source_col_map)
+        osi_datasets.append(osi_ds)
+        osi_relationships.extend(rels)
 
-        semantic_model: dict[str, Any] = {
-            "name": model_name,
-            "datasets": osi_datasets,
-        }
-        if model_description:
-            semantic_model["description"] = model_description
-        if osi_relationships:
-            semantic_model["relationships"] = osi_relationships
+    for di in model.ldm.date_instances:
+        osi_datasets.append(_convert_date_instance(di))
 
-        extensions = []
-        if data_source_id:
-            extensions.append(
-                {
-                    "vendor_name": "GOODDATA",
-                    "data": json.dumps({"data_source_id": data_source_id}),
-                }
-            )
-        if extensions:
-            semantic_model["custom_extensions"] = extensions
+    semantic_model: dict[str, Any] = {
+        "name": model_name,
+        "datasets": osi_datasets,
+    }
+    if model_description:
+        semantic_model["description"] = model_description
+    if osi_relationships:
+        semantic_model["relationships"] = osi_relationships
 
-        return {
-            "version": OSI_VERSION,
-            "semantic_model": [semantic_model],
-        }
+    extensions = []
+    if data_source_id:
+        extensions.append(
+            {
+                "vendor_name": "GOODDATA",
+                "data": json.dumps({"data_source_id": data_source_id}),
+            }
+        )
+    if extensions:
+        semantic_model["custom_extensions"] = extensions
 
-    @staticmethod
-    def _convert_dataset(
-        ds: GdDataset,
-        attr_source_col_map: dict[str, dict[str, str]],
-    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-        source = _build_source(ds)
-        primary_key = [attr.source_column for attr in ds.attributes if any(g.id == attr.id for g in ds.grain)]
+    return {
+        "version": OSI_VERSION,
+        "semantic_model": [semantic_model],
+    }
 
-        fields: list[dict[str, Any]] = []
-        for attr in ds.attributes:
-            fields.append(_convert_attribute(attr, ds.id))
-        for fact in ds.facts:
-            fields.append(_convert_fact(fact, ds.id))
 
-        osi_ds: dict[str, Any] = {
-            "name": ds.id,
-            "source": source,
-        }
-        if primary_key:
-            osi_ds["primary_key"] = primary_key
-        if ds.description:
-            osi_ds["description"] = ds.description
-        if ds.title != ds.id:
-            osi_ds["ai_context"] = {"synonyms": [ds.title]}
-        if fields:
-            osi_ds["fields"] = fields
+def _convert_dataset(
+    ds: GdDataset,
+    attr_source_col_map: dict[str, dict[str, str]],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    source = _build_source(ds)
+    primary_key = [attr.source_column for attr in ds.attributes if any(g.id == attr.id for g in ds.grain)]
 
-        relationships = []
-        for ref in ds.references:
-            rel = _convert_reference(ds.id, ref, attr_source_col_map)
-            relationships.append(rel)
+    fields: list[dict[str, Any]] = []
+    for attr in ds.attributes:
+        fields.append(_convert_attribute(attr, ds.id))
+    for fact in ds.facts:
+        fields.append(_convert_fact(fact, ds.id))
 
-        return osi_ds, relationships
+    osi_ds: dict[str, Any] = {
+        "name": ds.id,
+        "source": source,
+    }
+    if primary_key:
+        osi_ds["primary_key"] = primary_key
+    if ds.description:
+        osi_ds["description"] = ds.description
+    if ds.title != ds.id:
+        osi_ds["ai_context"] = {"synonyms": [ds.title]}
+    if fields:
+        osi_ds["fields"] = fields
 
-    @staticmethod
-    def _convert_date_instance(di: GdDateInstance) -> dict[str, Any]:
-        osi_ds: dict[str, Any] = {
-            "name": di.id,
-            "source": di.id,
-        }
-        if di.description:
-            osi_ds["description"] = di.description
-        if di.title != di.id:
-            osi_ds["ai_context"] = {"synonyms": [di.title]}
+    relationships = []
+    for ref in ds.references:
+        rel = _convert_reference(ds.id, ref, attr_source_col_map)
+        relationships.append(rel)
 
-        ext_data: dict[str, Any] = {
-            "date_dimension": True,
-            "granularities": di.granularities,
-        }
-        osi_ds["custom_extensions"] = [
-            {"vendor_name": "GOODDATA", "data": json.dumps(ext_data)},
-        ]
+    return osi_ds, relationships
 
-        return osi_ds
+
+def _convert_date_instance(di: GdDateInstance) -> dict[str, Any]:
+    osi_ds: dict[str, Any] = {
+        "name": di.id,
+        "source": di.id,
+    }
+    if di.description:
+        osi_ds["description"] = di.description
+    if di.title != di.id:
+        osi_ds["ai_context"] = {"synonyms": [di.title]}
+
+    ext_data: dict[str, Any] = {
+        "date_dimension": True,
+        "granularities": di.granularities,
+    }
+    osi_ds["custom_extensions"] = [
+        {"vendor_name": "GOODDATA", "data": json.dumps(ext_data)},
+    ]
+
+    return osi_ds
 
 
 def _convert_attribute(attr: GdAttribute, dataset_id: str) -> dict[str, Any]:

@@ -1,9 +1,12 @@
 """Tests for GoodData declarative model serialization/deserialization."""
 
+from __future__ import annotations
+
 from osi_core.converters.gooddata.models import GdDeclarativeModel, gd_model_from_dict, gd_model_to_dict
 
 
 def test_parse_gooddata_model(gooddata_tpcds_dict: dict, gooddata_tpcds_model: GdDeclarativeModel):
+    """Verify parsing of the GoodData TPC-DS fixture."""
     ldm = gooddata_tpcds_model.ldm
 
     assert len(ldm.datasets) == 4
@@ -32,6 +35,7 @@ def test_parse_gooddata_model(gooddata_tpcds_dict: dict, gooddata_tpcds_model: G
 
 
 def test_roundtrip_serialization(gooddata_tpcds_dict: dict):
+    """Verify that parsing and re-serializing produces equivalent output."""
     model = gd_model_from_dict(gooddata_tpcds_dict)
     result = gd_model_to_dict(model)
 

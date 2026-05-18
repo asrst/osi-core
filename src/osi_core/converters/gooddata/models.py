@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -119,9 +119,6 @@ class GdDeclarativeModel:
     ldm: GdLdm = field(default_factory=GdLdm)
 
 
-# --- Serialization helpers ---
-
-
 def gd_model_from_dict(data: dict[str, Any]) -> GdDeclarativeModel:
     """Parse a GoodData declarative model JSON dict into typed dataclasses."""
     ldm_data = data.get("ldm", {})
@@ -172,6 +169,12 @@ def gd_model_from_dict(data: dict[str, Any]) -> GdDeclarativeModel:
         references = []
         for ref in ds.get("references", []):
             ident = ref["identifier"]
+            if "sources" not in ref:
+                raise ValueError(
+                    f"Dataset '{ds['id']}' reference to '{ident['id']}' is missing 'sources'. "
+                    "The legacy 'sourceColumns' format is not supported; please upgrade the LDM "
+                    "to the new 'sources' format."
+                )
             sources = [
                 GdReferenceSource(
                     column=s["column"],
@@ -181,7 +184,7 @@ def gd_model_from_dict(data: dict[str, Any]) -> GdDeclarativeModel:
                     ),
                     data_type=s.get("dataType"),
                 )
-                for s in ref.get("sources", [])
+                for s in ref["sources"]
             ]
             references.append(
                 GdReference(

@@ -22,8 +22,8 @@ from .models import (
     GdReferenceIdentifier,
     GdReferenceSource,
     GdReferenceTarget,
+    gd_model_to_dict,
 )
-
 
 _MAQL_LABEL_RE = re.compile(r"\{label/([^.]+)\.([^}]+)\}")
 _MAQL_FACT_RE = re.compile(r"\{fact/([^.]+)\.([^}]+)\}")
@@ -39,32 +39,32 @@ class GoodDataExporter(BaseConverter):
 
     def from_osi(self, osi_model: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
         data_source_id = kwargs.get("data_source_id", "default")
-        gd_model = self._convert(osi_model, data_source_id)
-        from .models import gd_model_to_dict
-        return gd_model_to_dict(gd_model)
+        model = osi_to_gooddata(osi_model, data_source_id)
+        return gd_model_to_dict(model)
 
-    def _convert(
-        self,
-        osi_model: dict[str, Any],
-        data_source_id: str = "default",
-    ) -> GdDeclarativeModel:
-        datasets: list[GdDataset] = []
-        date_instances: list[GdDateInstance] = []
 
-        for sm in osi_model.get("semantic_model", []):
-            relationship_map = _build_relationship_map(sm)
-            target_info = _build_target_info(sm)
+def osi_to_gooddata(
+    osi_model: dict[str, Any],
+    data_source_id: str = "default",
+) -> GdDeclarativeModel:
+    """Convert an OSI semantic model dict to a GoodData declarative model."""
+    datasets: list[GdDataset] = []
+    date_instances: list[GdDateInstance] = []
 
-            for ds in sm.get("datasets", []):
-                gd_ds, date_inst = _convert_osi_dataset(
-                    ds, relationship_map, target_info, data_source_id,
-                )
-                if date_inst:
-                    date_instances.append(date_inst)
-                else:
-                    datasets.append(gd_ds)
+    for sm in osi_model.get("semantic_model", []):
+        relationship_map = _build_relationship_map(sm)
+        target_info = _build_target_info(sm)
 
-        return GdDeclarativeModel(ldm=GdLdm(datasets=datasets, date_instances=date_instances))
+        for ds in sm.get("datasets", []):
+            gd_ds, date_inst = _convert_osi_dataset(
+                ds, relationship_map, target_info, data_source_id,
+            )
+            if date_inst:
+                date_instances.append(date_inst)
+            else:
+                datasets.append(gd_ds)
+
+    return GdDeclarativeModel(ldm=GdLdm(datasets=datasets, date_instances=date_instances))
 
 
 def _build_target_info(sm: dict[str, Any]) -> dict[str, dict[str, Any]]:
