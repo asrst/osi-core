@@ -12,7 +12,7 @@ osi-core is a hub-and-spoke translator for metric definitions. It reads metric f
 
 Currently supported: **OSI** (YAML).
 
-Planned: **MetricFlow**, **Snowflake**.
+Planned: vendor converters such as **Snowflake**, **GoodData**, and others.
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ pip install osi-core
 
 ```bash
 osi-core validate metrics.yaml --format osi
-osi-core translate metrics.yaml --from osi --to metricflow
+osi-core translate metrics.yaml --from osi --to osi
 osi-core diff old.yaml new.yaml
 ```
 

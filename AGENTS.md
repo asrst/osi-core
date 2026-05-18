@@ -21,7 +21,7 @@ uv run pytest packages/core/tests/test_readers/test_osi.py  # single test file
 CLI (via `osi-core` entry point):
 ```bash
 osi-core validate metrics.yaml --format osi
-osi-core translate metrics.yaml --from osi --to metricflow
+osi-core translate metrics.yaml --from osi --to osi
 osi-core diff old.yaml new.yaml
 ```
 
