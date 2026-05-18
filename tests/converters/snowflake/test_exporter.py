@@ -6,14 +6,14 @@ import pytest
 import yaml
 
 from osi_core.converters.snowflake.exporter import (
-    SnowflakeExporter,
     OsiConversionError,
+    SnowflakeExporter,
     _classify_field,
     _extract_expression,
     _extract_synonyms,
-    _normalize_identifier,
     _parse_source,
 )
+from osi_core.normalizer import normalize_identifier as _normalize_identifier
 
 
 @pytest.fixture

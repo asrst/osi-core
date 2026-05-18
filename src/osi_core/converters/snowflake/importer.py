@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from ..base import BaseConverter
-from .exporter import _normalize_identifier, _extract_synonyms
+from ...normalizer import normalize_identifier
+from .exporter import _extract_synonyms
 
 
 class SnowflakeImporter(BaseConverter):

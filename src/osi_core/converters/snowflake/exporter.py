@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from ..base import BaseConverter
+from ...normalizer import normalize_identifier
 
 
 SUPPORTED_VERSION = "0.1.1"
@@ -292,13 +293,6 @@ def _extract_expression(expression: Any, field_name: str) -> Optional[str]:
     return None
 
 
-def _normalize_identifier(identifier: str) -> str:
-    stripped = identifier.strip()
-    if stripped.startswith('"') and stripped.endswith('"'):
-        return stripped
-    return stripped.upper()
-
-
 def _parse_source(source: Optional[str]) -> Optional[dict]:
     if not source:
         return None
@@ -315,9 +309,9 @@ def _parse_source(source: Optional[str]) -> Optional[dict]:
     parts = source_stripped.split(".")
     if len(parts) == 3:
         return {
-            "database": _normalize_identifier(parts[0]),
-            "schema": _normalize_identifier(parts[1]),
-            "table": _normalize_identifier(parts[2]),
+            "database": normalize_identifier(parts[0]),
+            "schema": normalize_identifier(parts[1]),
+            "table": normalize_identifier(parts[2]),
         }
 
     raise OsiConversionError(
