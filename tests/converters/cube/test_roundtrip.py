@@ -21,7 +21,7 @@ def load(name: str) -> dict:
 
 class TestRoundtrip:
     def test_basic_roundtrip(self, converter):
-        original = load("orders.yml")
+        original = load("orders.yaml")
         osi = converter.to_osi(original)
         exported = converter.from_osi(osi)
 
@@ -30,7 +30,7 @@ class TestRoundtrip:
         assert exported["cubes"][0]["name"] == "orders"
 
     def test_ecommerce_roundtrip(self, converter):
-        original = load("ecommerce.yml")
+        original = load("ecommerce.yaml")
         osi = converter.to_osi(original)
         exported = converter.from_osi(osi)
 
@@ -38,7 +38,7 @@ class TestRoundtrip:
         assert names == {"orders", "customers", "products"}
 
     def test_advanced_roundtrip(self, converter):
-        original = load("advanced.yml")
+        original = load("advanced.yaml")
         osi = converter.to_osi(original)
         exported = converter.from_osi(osi)
 
@@ -52,7 +52,7 @@ class TestRoundtrip:
         }
 
     def test_roundtrip_creates_valid_osi(self, converter):
-        original = load("orders.yml")
+        original = load("orders.yaml")
         osi = converter.to_osi(original)
         assert "version" in osi
         assert "semantic_model" in osi

@@ -21,28 +21,28 @@ def load(name: str) -> dict:
 
 class TestBasicCubes:
     def test_parses_name(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         sm = result["semantic_model"][0]
         assert sm["name"] == "cube_model"
 
     def test_creates_datasets(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         datasets = result["semantic_model"][0]["datasets"]
         assert len(datasets) == 2
         assert datasets[0]["name"] == "orders"
 
     def test_extracts_source_from_sql_table(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         ds = result["semantic_model"][0]["datasets"][0]
         assert ds["source"] == "public.orders"
 
     def test_primary_key(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         ds = result["semantic_model"][0]["datasets"][0]
         assert ds["primary_key"] == ["id"]
 
     def test_dimensions_as_fields(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         fields = result["semantic_model"][0]["datasets"][0]["fields"]
         names = {f["name"] for f in fields}
         assert "id" in names
@@ -50,13 +50,13 @@ class TestBasicCubes:
         assert "status" in names
 
     def test_time_dimension(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         fields = result["semantic_model"][0]["datasets"][0]["fields"]
         time_dim = next(f for f in fields if f["name"] == "order_date")
         assert time_dim["dimension"]["is_time"] is True
 
     def test_string_dimension(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         fields = result["semantic_model"][0]["datasets"][0]["fields"]
         cat_dim = next(f for f in fields if f["name"] == "status")
         assert cat_dim["dimension"]["is_time"] is False
@@ -64,34 +64,34 @@ class TestBasicCubes:
 
 class TestMeasures:
     def test_measure_becomes_metric(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         names = {m["name"] for m in metrics}
         assert "orders__total" in names
 
     def test_sum_measure_expression(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         m = next(m for m in metrics if m["name"] == "orders__total")
         expr = m["expression"]["dialects"][0]["expression"]
         assert expr == "SUM(amount)"
 
     def test_count_measure_expression(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         m = next(m for m in metrics if m["name"] == "orders__order_count")
         expr = m["expression"]["dialects"][0]["expression"]
         assert expr == "COUNT(*)"
 
     def test_avg_measure_expression(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         m = next(m for m in metrics if m["name"] == "orders__avg_amount")
         expr = m["expression"]["dialects"][0]["expression"]
         assert expr == "AVG(amount)"
 
     def test_measure_has_custom_extension(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         m = next(m for m in metrics if m["name"] == "orders__total")
         exts = m.get("custom_extensions", [])
@@ -105,7 +105,7 @@ class TestMeasures:
 
 class TestAdvancedMeasures:
     def test_number_type_uses_direct_sql(self, importer):
-        result = importer.to_osi(load("advanced.yml"))
+        result = importer.to_osi(load("advanced.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         m = next(m for m in metrics if m["name"] == "orders__revenue_ratio")
         expr = m["expression"]["dialects"][0]["expression"]
@@ -113,14 +113,14 @@ class TestAdvancedMeasures:
         assert "NULLIF" in expr
 
     def test_count_distinct(self, importer):
-        result = importer.to_osi(load("advanced.yml"))
+        result = importer.to_osi(load("advanced.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         m = next(m for m in metrics if m["name"] == "orders__count_distinct_customers")
         expr = m["expression"]["dialects"][0]["expression"]
         assert expr == "COUNT(DISTINCT customer_id)"
 
     def test_window_expression(self, importer):
-        result = importer.to_osi(load("advanced.yml"))
+        result = importer.to_osi(load("advanced.yaml"))
         metrics = result["semantic_model"][0]["metrics"]
         m = next(m for m in metrics if m["name"] == "orders__revenue_running_total")
         expr = m["expression"]["dialects"][0]["expression"]
@@ -129,7 +129,7 @@ class TestAdvancedMeasures:
 
 class TestRelationships:
     def test_join_becomes_relationship(self, importer):
-        result = importer.to_osi(load("orders.yml"))
+        result = importer.to_osi(load("orders.yaml"))
         rels = result["semantic_model"][0]["relationships"]
         assert len(rels) == 1
         assert rels[0]["from"] == "orders"
@@ -138,7 +138,7 @@ class TestRelationships:
         assert rels[0]["to_columns"] == ["id"]
 
     def test_ecommerce_multiple_relationships(self, importer):
-        result = importer.to_osi(load("ecommerce.yml"))
+        result = importer.to_osi(load("ecommerce.yaml"))
         rels = result["semantic_model"][0]["relationships"]
         assert len(rels) == 2
         to_names = {r["to"] for r in rels}

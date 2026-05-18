@@ -89,18 +89,48 @@ class DbtMetricFlowImporter(BaseConverter):
         model_ref = mf_model.get("model", "")
         dataset["source"] = self._extract_table_name(model_ref)
 
+        pk_column = None
         for entity in mf_model.get("entities", []):
             if entity.get("type") == "primary":
-                dataset["primary_key"] = [entity.get("expr", entity["name"])]
+                pk_column = entity.get("expr", entity["name"])
+                dataset["primary_key"] = [pk_column]
                 break
 
         if "primary_key" not in dataset:
             primary_entity = mf_model.get("primary_entity")
             if primary_entity:
-                dataset["primary_key"] = [primary_entity]
+                pk_column = primary_entity
+                dataset["primary_key"] = [pk_column]
 
+        existing_field_names: set[str] = set()
         for dim in mf_model.get("dimensions", []):
             dataset["fields"].append(self._convert_dimension(dim))
+            existing_field_names.add(dim["name"])
+
+        for entity in mf_model.get("entities", []):
+            col = entity.get("expr", entity["name"])
+            if col not in existing_field_names and col != pk_column:
+                dataset["fields"].append({
+                    "name": col,
+                    "expression": {
+                        "dialects": [{
+                            "dialect": "ANSI_SQL",
+                            "expression": col,
+                        }],
+                    },
+                })
+                existing_field_names.add(col)
+
+        if pk_column and pk_column not in existing_field_names:
+            dataset["fields"].append({
+                "name": pk_column,
+                "expression": {
+                    "dialects": [{
+                        "dialect": "ANSI_SQL",
+                        "expression": pk_column,
+                    }],
+                },
+            })
 
         defaults = mf_model.get("defaults")
         if defaults and defaults.get("agg_time_dimension"):
