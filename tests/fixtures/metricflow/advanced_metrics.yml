@@ -1,0 +1,47 @@
+semantic_models:
+  - name: orders
+    model: ref('raw_orders')
+    entities:
+      - name: order_id
+        type: primary
+        expr: order_id
+    dimensions:
+      - name: order_date
+        type: time
+        type_params:
+          time_granularity: day
+    measures:
+      - name: order_total
+        agg: sum
+        expr: amount
+
+metrics:
+  - name: total_revenue
+    type: simple
+    type_params:
+      measure: order_total
+
+  - name: revenue_per_order
+    type: ratio
+    type_params:
+      numerator:
+        name: order_total
+      denominator:
+        name: order_count
+
+  - name: order_count
+    type: simple
+    type_params:
+      measure: order_count
+
+  - name: revenue_growth
+    type: derived
+    type_params:
+      expr: total_revenue / NULLIF(total_revenue_last_year, 0)
+
+  - name: revenue_mtd
+    type: cumulative
+    type_params:
+      window: 30 days
+      grain_to_date: day
+      measure: order_total

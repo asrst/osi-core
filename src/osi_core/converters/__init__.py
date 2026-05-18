@@ -1,10 +1,12 @@
 from .base import BaseConverter
 from .snowflake import SnowflakeConverter
 from .gooddata import GoodDataConverter
+from .metricflow import DbtMetricFlowConverter
 
 _CONVERTERS: dict[str, BaseConverter] = {
     "snowflake": SnowflakeConverter(),
     "gooddata": GoodDataConverter(),
+    "dbt_metricflow": DbtMetricFlowConverter(),
 }
 
 
@@ -20,6 +22,7 @@ __all__ = [
     "BaseConverter",
     "SnowflakeConverter",
     "GoodDataConverter",
+    "DbtMetricFlowConverter",
     "register_converter",
     "discover_converters",
 ]

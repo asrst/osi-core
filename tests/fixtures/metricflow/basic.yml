@@ -1,0 +1,39 @@
+semantic_models:
+  - name: orders
+    model: ref('raw_orders')
+    defaults:
+      agg_time_dimension: order_date
+    entities:
+      - name: order_id
+        type: primary
+        expr: order_id
+      - name: customer
+        type: foreign
+        expr: customer_id
+    dimensions:
+      - name: order_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: status
+        type: categorical
+    measures:
+      - name: order_total
+        agg: sum
+        expr: amount
+      - name: order_count
+        agg: count
+
+  - name: customers
+    model: ref('raw_customers')
+    entities:
+      - name: customer_id
+        type: primary
+        expr: customer_id
+    dimensions:
+      - name: first_order_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: tier
+        type: categorical

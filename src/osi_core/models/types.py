@@ -21,6 +21,8 @@ class Vendor(Enum):
     DBT = "DBT"
     DATABRICKS = "DATABRICKS"
     GOODDATA = "GOODDATA"
+    DBT_METRICFLOW = "DBT_METRICFLOW"
+    CUBE = "CUBE"
 
 
 class DialectExpr(BaseModel):

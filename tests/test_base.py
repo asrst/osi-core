@@ -3,17 +3,18 @@ from __future__ import annotations
 import pytest
 
 from osi_core.converters.base import BaseConverter
-from osi_core.converters import discover_converters, SnowflakeConverter, GoodDataConverter
+from osi_core.converters import discover_converters, SnowflakeConverter, GoodDataConverter, DbtMetricFlowConverter
 
 
 def test_all_converters_are_registered():
     converters = discover_converters()
     assert "snowflake" in converters
     assert "gooddata" in converters
+    assert "dbt_metricflow" in converters
 
 
 class TestBaseConverterContract:
-    @pytest.fixture(params=["snowflake", "gooddata"])
+    @pytest.fixture(params=["snowflake", "gooddata", "dbt_metricflow"])
     def converter(self, request: pytest.FixtureRequest) -> BaseConverter:
         return discover_converters()[request.param]
 
@@ -66,6 +67,25 @@ class TestSnowflakeConverterContract:
         assert isinstance(result, dict)
 
 
+class TestDbtMetricFlowConverterContract:
+    def test_converter_type(self):
+        mf = DbtMetricFlowConverter()
+        assert isinstance(mf, BaseConverter)
+
+    def test_vendor_name(self):
+        assert DbtMetricFlowConverter.VENDOR_NAME == "DBT_METRICFLOW"
+
+    def test_from_osi_returns_dict(self):
+        mf = DbtMetricFlowConverter()
+        result = mf.from_osi(_minimal_osi())
+        assert isinstance(result, dict)
+
+    def test_to_osi_returns_dict(self):
+        mf = DbtMetricFlowConverter()
+        result = mf.to_osi(_minimal_metricflow())
+        assert isinstance(result, dict)
+
+
 class TestGoodDataConverterContract:
     def test_converter_type(self):
         gc = GoodDataConverter()
@@ -115,6 +135,20 @@ def _minimal_snowflake() -> dict:
                 "name": "test_table",
                 "base_table": {"table": "test_table"},
                 "dimensions": [{"name": "col1"}],
+            }
+        ],
+    }
+
+
+def _minimal_metricflow() -> dict:
+    return {
+        "semantic_models": [
+            {
+                "name": "test",
+                "model": "ref('test_table')",
+                "entities": [{"name": "id", "type": "primary", "expr": "id"}],
+                "dimensions": [{"name": "col1", "type": "categorical"}],
+                "measures": [{"name": "total", "agg": "sum", "expr": "amount"}],
             }
         ],
     }
