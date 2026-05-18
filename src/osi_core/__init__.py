@@ -18,6 +18,7 @@ from .models.types import (
 from .serializer import load_osi_yaml, load_osi_json, dump_osi_yaml, load_osi_model, dump_osi_model
 from .validator import validate_schema
 from .converters import BaseConverter, discover_converters
+from .dialects import DIALECT_MAP, select_dialect
 
 __all__ = [
     "ResolvedModel",
@@ -41,4 +42,6 @@ __all__ = [
     "validate_schema",
     "BaseConverter",
     "discover_converters",
+    "DIALECT_MAP",
+    "select_dialect",
 ]

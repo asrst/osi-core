@@ -9,12 +9,9 @@ from sqlglot import parse_one
 from sqlglot.errors import ParseError
 
 
+from .dialects import DIALECT_MAP
+
 SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "osi-schema.json"
-DIALECT_MAP = {
-    "ANSI_SQL": "sql",
-    "SNOWFLAKE": "snowflake",
-    "DATABRICKS": "databricks",
-}
 
 
 def _load_schema() -> Dict[str, Any]:
