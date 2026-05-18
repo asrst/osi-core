@@ -7,24 +7,37 @@
 # Structure
 
 - `src/osi_core/` — main implementation package
+  - `converters/snowflake/` — Snowflake bidirectional converter
+  - `converters/gooddata/` — GoodData bidirectional converter (ported from official OSI repo)
+  - `dialects.py` — OSI→sqlglot dialect mapping
+  - `normalizer.py` — shared identifier normalization & source parsing
 - `src/osi/` — optional CLI wrapper (can be removed once entry point is updated)
+- `tests/fixtures/` — per-vendor fixture subdirs (`osi/`, `snowflake/`, plus root-level canonical fixtures)
 - Dev deps live in root `pyproject.toml`
 
 # Commands
 
 ```bash
 uv sync                    # install all deps
-uv run pytest              # run all tests
-uv run pytest packages/core/tests/test_readers/test_osi.py  # single test file
+uv run pytest              # run all 224+ tests
+uv run pytest -k snowflake # run only Snowflake-related tests
+uv run pytest -k gooddata  # run only GoodData-related tests
 ```
 
 CLI (via `osi-core` entry point):
 ```bash
 osi-core validate metrics.yaml --format osi
-osi-core translate metrics.yaml --from osi --to osi
+osi-core convert snowflake export metrics.yaml -o output.yaml
+osi-core convert snowflake import snowflake_model.yaml -o osi_output.yaml
+osi-core convert gooddata export osi_model.yaml -o gooddata_output.json
 osi-core diff old.yaml new.yaml
+osi-core list-converters
 ```
 
 # Testing
 
-Fixtures live in `tests/fixtures/`. Snapshot tests use `syrupy` — run `pytest --snapshot-update` to update snapshots.
+- Fixtures live in `tests/fixtures/` — per-vendor subdirs for sidemantic fixtures, root level for canonical (TPC-DS) fixtures
+- No snapshot tests currently active; `syrupy` is a dev dep but not used
+- `tests/test_fixture_coverage.py` verifies every fixture parses and converts correctly
+- `tests/test_base.py` verifies every converter implements the `BaseConverter` contract
+- GoodData tests match the official OSI repo test suite (test_gooddata_to_osi.py etc.)
