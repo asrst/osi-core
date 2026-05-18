@@ -1,8 +1,10 @@
+import json
 import typer
+import yaml
 from pathlib import Path
 from typing import Optional
 
-from .serializer import load_osi_model, dump_osi_model, load_osi_yaml
+from .serializer import load_osi_model, dump_osi_model, dump_osi_yaml, load_osi_yaml
 from .validator import validate_schema
 from .converters import discover_converters
 
@@ -46,21 +48,27 @@ def convert(
         raise typer.Exit(1)
 
     try:
-        raw_input = load_osi_yaml(file)
-
         if direction == "export":
-            result = converter.from_osi(raw_input)
+            osi_dict = load_osi_yaml(file)
+            result = converter.from_osi(osi_dict)
+            if vendor == "gooddata":
+                result_text = json.dumps(result, indent=2)
+            else:
+                result_text = yaml.dump(result, sort_keys=False, default_flow_style=False)
         elif direction == "import":
-            result = converter.to_osi(raw_input)
+            raw = file.read_text()
+            native = yaml.safe_load(raw) if vendor == "snowflake" else json.loads(raw)
+            result = converter.to_osi(native)
+            result_text = dump_osi_yaml(result)
         else:
             typer.echo("Direction must be 'import' or 'export'", err=True)
             raise typer.Exit(1)
 
         if output:
-            output.write_text(result)
-            typer.echo(f"Converted to {output}")
+            output.write_text(result_text)
+            typer.echo(f"Wrote {output}")
         else:
-            typer.echo(result)
+            typer.echo(result_text)
     except Exception as e:
         typer.echo(f"Conversion failed: {e}", err=True)
         raise typer.Exit(1)
