@@ -33,4 +33,4 @@ uv sync
 uv run pytest
 ```
 
-See [`packages/core/docs/README.md`](packages/core/docs/README.md) for more details.
+See [`docs/DEVELOPER.md`](docs/DEVELOPER.md) for more details.

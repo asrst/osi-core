@@ -7,22 +7,27 @@ authors = [
     { name = "outer-joined", email = "useawe@proton.me" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pydantic>=2.13.4",
+    "pyyaml>=6.0",
+    "rich>=15.0.0",
+    "sqlglot>=30.7.0",
+    "typer>=0.25.1",
+]
 
 [project.scripts]
-osi-core = "osi:main"
+osi-core = "osi_core.cli:app"
+
+[project.entry-points."osi.adapters"]
+osi = "osi_core.adapters:OsiAdapter"
+metricflow = "osi_core.adapters:MetricFlowAdapter"
 
 [build-system]
 requires = ["uv_build>=0.11.12,<0.12.0"]
 build-backend = "uv_build"
 
-[tool.uv.workspace]
-members = [
-    "packages/*",
-]
-
-[dependency-groups]
-dev = [
+[tool.uv]
+dev-dependencies = [
     "hypothesis>=6.152.4",
     "pre-commit>=4.6.0",
     "pyright>=1.1.409",
@@ -31,3 +36,6 @@ dev = [
     "ruff>=0.15.12",
     "syrupy>=5.1.0",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

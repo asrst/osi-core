@@ -1,5 +1,5 @@
 {
-  "name": "OSI Core Dev",
+  "name": "Semetric Dev",
   "image": "mcr.microsoft.com/devcontainers/python:3.14-trixie",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
@@ -11,10 +11,11 @@
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
         "python.testing.pytestEnabled": true,
-        "python.testing.pytestArgs": ["packages/core/tests/"],
+        "python.testing.pytestArgs": [
+          "packages/core/tests/"
+        ],
         "editor.formatOnSave": true,
-        "ruff.lintOnSave": true,
-        "ruff.lint.args": ["packages/core/src/"]
+        "ruff.lintOnSave": true
       },
       "extensions": [
         "ms-python.python",

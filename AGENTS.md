@@ -6,9 +6,9 @@
 
 # Structure
 
-- `src/osi/` — thin entry point wrapper; re-exports CLI from `osi-core`
-- `packages/core/` — main implementation (`osi-core` package)
-- Dev deps live in root `pyproject.toml`; core dev deps declared in `packages/core/pyproject.toml`
+- `src/osi_core/` — main implementation package
+- `src/osi/` — optional CLI wrapper (can be removed once entry point is updated)
+- Dev deps live in root `pyproject.toml`
 
 # Commands
 
@@ -27,4 +27,4 @@ osi-core diff old.yaml new.yaml
 
 # Testing
 
-Fixtures live in `packages/core/tests/fixtures/`. Snapshot tests use `syrupy` — run `pytest --snapshot-update` to update snapshots.
+Fixtures live in `tests/fixtures/`. Snapshot tests use `syrupy` — run `pytest --snapshot-update` to update snapshots.
