@@ -3,12 +3,14 @@ from .snowflake import SnowflakeConverter
 from .gooddata import GoodDataConverter
 from .metricflow import DbtMetricFlowConverter
 from .cube import CubeConverter
+from .superset import SupersetConverter
 
 _CONVERTERS: dict[str, BaseConverter] = {
     "snowflake": SnowflakeConverter(),
     "gooddata": GoodDataConverter(),
     "dbt_metricflow": DbtMetricFlowConverter(),
     "cube": CubeConverter(),
+    "superset": SupersetConverter(),
 }
 
 
@@ -26,6 +28,7 @@ __all__ = [
     "GoodDataConverter",
     "DbtMetricFlowConverter",
     "CubeConverter",
+    "SupersetConverter",
     "register_converter",
     "discover_converters",
 ]

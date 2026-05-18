@@ -42,7 +42,7 @@
     },
     "Vendor": {
       "type": "string",
-      "enum": ["COMMON", "SNOWFLAKE", "SALESFORCE", "DBT", "DATABRICKS", "GOODDATA", "DBT_METRICFLOW", "CUBE"],
+      "enum": ["COMMON", "SNOWFLAKE", "SALESFORCE", "DBT", "DATABRICKS", "GOODDATA", "DBT_METRICFLOW", "CUBE", "SUPERSET"],
       "description": "Supported vendors for custom extensions"
     },
     "AIContext": {

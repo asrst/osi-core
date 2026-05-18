@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from osi_core.converters.base import BaseConverter
-from osi_core.converters import discover_converters, SnowflakeConverter, GoodDataConverter, DbtMetricFlowConverter, CubeConverter
+from osi_core.converters import discover_converters, SnowflakeConverter, GoodDataConverter, DbtMetricFlowConverter, CubeConverter, SupersetConverter
 
 
 def test_all_converters_are_registered():
@@ -12,10 +12,11 @@ def test_all_converters_are_registered():
     assert "gooddata" in converters
     assert "dbt_metricflow" in converters
     assert "cube" in converters
+    assert "superset" in converters
 
 
 class TestBaseConverterContract:
-    @pytest.fixture(params=["snowflake", "gooddata", "dbt_metricflow", "cube"])
+    @pytest.fixture(params=["snowflake", "gooddata", "dbt_metricflow", "cube", "superset"])
     def converter(self, request: pytest.FixtureRequest) -> BaseConverter:
         return discover_converters()[request.param]
 
@@ -184,6 +185,34 @@ def _minimal_metricflow() -> dict:
                 "measures": [{"name": "total", "agg": "sum", "expr": "amount"}],
             }
         ],
+    }
+
+
+class TestSupersetConverterContract:
+    def test_converter_type(self):
+        sc = SupersetConverter()
+        assert isinstance(sc, BaseConverter)
+
+    def test_vendor_name(self):
+        assert SupersetConverter.VENDOR_NAME == "SUPERSET"
+
+    def test_from_osi_returns_dict(self):
+        sc = SupersetConverter()
+        result = sc.from_osi(_minimal_osi())
+        assert isinstance(result, dict)
+
+    def test_to_osi_returns_dict(self):
+        sc = SupersetConverter()
+        result = sc.to_osi(_minimal_superset())
+        assert isinstance(result, dict)
+
+
+def _minimal_superset() -> dict:
+    return {
+        "table_name": "test",
+        "schema": "public",
+        "columns": [{"column_name": "id", "type": "VARCHAR"}],
+        "metrics": [{"metric_name": "cnt", "expression": "COUNT(*)", "metric_type": "count"}],
     }
 
 

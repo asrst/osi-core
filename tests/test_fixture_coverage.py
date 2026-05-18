@@ -156,6 +156,45 @@ class TestCubeFixtures:
         assert isinstance(data["cubes"], list), f"{path.name} 'cubes' must be a list"
 
 
+def _superset_fixtures() -> list[Path]:
+    return list_fixtures("superset")
+
+
+class TestSupersetFixturesImport:
+    @pytest.mark.parametrize("path", _superset_fixtures(), ids=lambda p: p.stem)
+    def test_import_to_osi(self, path: Path):
+        from osi_core.converters.superset import SupersetImporter
+        data = load_yaml(path)
+        result = SupersetImporter().to_osi(data)
+        assert isinstance(result, dict)
+        assert "semantic_model" in result
+        for sm in result["semantic_model"]:
+            assert "datasets" in sm
+            assert len(sm["datasets"]) > 0
+
+    @pytest.mark.parametrize("path", _superset_fixtures(), ids=lambda p: p.stem)
+    def test_imported_osi_validates(self, path: Path):
+        from osi_core.converters.superset import SupersetImporter
+        data = load_yaml(path)
+        result = SupersetImporter().to_osi(data)
+        errors = validate_schema(result)
+        assert errors == [], f"{path.name} OSI validation errors: {errors}"
+
+
+class TestSupersetFixtures:
+    @pytest.mark.parametrize("path", _superset_fixtures(), ids=lambda p: p.stem)
+    def test_parseable(self, path: Path):
+        data = load_yaml(path)
+        assert isinstance(data, dict), f"{path.name} is not a dict"
+
+    @pytest.mark.parametrize("path", _superset_fixtures(), ids=lambda p: p.stem)
+    def test_has_required_keys(self, path: Path):
+        data = load_yaml(path)
+        assert "table_name" in data, f"{path.name} missing 'table_name'"
+        assert "columns" in data, f"{path.name} missing 'columns'"
+        assert isinstance(data["columns"], list), f"{path.name} 'columns' must be a list"
+
+
 class TestSnowflakeFixtures:
     @pytest.mark.parametrize("path", _snowflake_fixtures(), ids=lambda p: p.stem)
     def test_parseable(self, path: Path):

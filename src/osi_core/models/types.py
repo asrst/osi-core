@@ -23,6 +23,7 @@ class Vendor(Enum):
     GOODDATA = "GOODDATA"
     DBT_METRICFLOW = "DBT_METRICFLOW"
     CUBE = "CUBE"
+    SUPERSET = "SUPERSET"
 
 
 class DialectExpr(BaseModel):
