@@ -49,6 +49,29 @@ class TestOsiFixtures:
         assert errors == [], f"{path.name} validation errors: {errors}"
 
 
+class TestSnowflakeFixturesImport:
+    """Exercise SnowflakeImporter against every Snowflake fixture."""
+
+    @pytest.mark.parametrize("path", _snowflake_fixtures(), ids=lambda p: p.stem)
+    def test_import_to_osi(self, path: Path):
+        from osi_core.converters.snowflake import SnowflakeImporter
+        data = load_yaml(path)
+        result = SnowflakeImporter().to_osi(data)
+        assert isinstance(result, dict)
+        assert "semantic_model" in result
+        for sm in result["semantic_model"]:
+            assert "datasets" in sm
+            assert len(sm["datasets"]) > 0
+
+    @pytest.mark.parametrize("path", _snowflake_fixtures(), ids=lambda p: p.stem)
+    def test_imported_osi_validates(self, path: Path):
+        from osi_core.converters.snowflake import SnowflakeImporter
+        data = load_yaml(path)
+        result = SnowflakeImporter().to_osi(data)
+        errors = validate_schema(result)
+        assert errors == [], f"{path.name} OSI validation errors: {errors}"
+
+
 def test_tpcds_reference_validates():
     from tests.helpers import FIXTURES_DIR
     path = FIXTURES_DIR / "tpcds_semantic_model.yaml"

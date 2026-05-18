@@ -39,13 +39,16 @@ class SnowflakeImporter(BaseConverter):
         for metric in snowflake.get("metrics", []):
             metrics.append(self._convert_metric(metric))
 
-        first_sm = {
+        first_sm: dict[str, Any] = {
             "name": snowflake.get("name", "imported_model"),
-            "description": snowflake.get("description"),
             "datasets": datasets,
-            "relationships": relationships,
-            "metrics": metrics,
         }
+        if snowflake.get("description"):
+            first_sm["description"] = snowflake["description"]
+        if relationships:
+            first_sm["relationships"] = relationships
+        if metrics:
+            first_sm["metrics"] = metrics
 
         return {
             "version": "0.1.1",
