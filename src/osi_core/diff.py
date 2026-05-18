@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from .models import ResolvedModel, Metric, SemanticModel, Dataset
+from .models import OsiModel, Metric, SemanticModel, Dataset
 
 
 class DiffResult:
@@ -23,7 +23,7 @@ class DiffResult:
 
 
 class ModelDiff:
-    def compare(self, old: ResolvedModel, new: ResolvedModel) -> DiffResult:
+    def compare(self, old: OsiModel, new: OsiModel) -> DiffResult:
         result = DiffResult()
 
         old_sms = {sm.name: sm for sm in old.semantic_models}

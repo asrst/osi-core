@@ -11,7 +11,7 @@
   - `converters/gooddata/` — GoodData bidirectional converter (ported from official OSI repo)
   - `dialects.py` — OSI→sqlglot dialect mapping
   - `normalizer.py` — shared identifier normalization & source parsing
-- `src/osi/` — optional CLI wrapper (can be removed once entry point is updated)
+- (removed `src/osi/` wrapper — entry point now uses `osi` directly)
 - `tests/fixtures/` — per-vendor fixture subdirs (`osi/`, `snowflake/`, plus root-level canonical fixtures)
 - Dev deps live in root `pyproject.toml`
 
@@ -24,14 +24,14 @@ uv run pytest -k snowflake # run only Snowflake-related tests
 uv run pytest -k gooddata  # run only GoodData-related tests
 ```
 
-CLI (via `osi-core` entry point):
+CLI (via `osi` entry point):
 ```bash
-osi-core validate metrics.yaml --format osi
-osi-core convert snowflake export metrics.yaml -o output.yaml
-osi-core convert snowflake import snowflake_model.yaml -o osi_output.yaml
-osi-core convert gooddata export osi_model.yaml -o gooddata_output.json
-osi-core diff old.yaml new.yaml
-osi-core list-converters
+osi validate metrics.yaml
+osi convert -i metrics.yaml --to snowflake -o output.yaml            # OSI → Snowflake
+osi convert -i model.yaml --from snowflake -o osi_output.yaml        # Snowflake → OSI
+osi convert -i osi_model.yaml --to gooddata -o gooddata_output.json  # OSI → GoodData
+osi diff old.yaml new.yaml
+osi list-converters
 ```
 
 # Testing

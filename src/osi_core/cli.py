@@ -31,15 +31,30 @@ def validate(
 
 @app.command()
 def convert(
-    vendor: str,
-    direction: str,
-    file: Path,
+    input_file: Path = typer.Option(..., "-i", "--input", help="Input file"),
+    from_format: Optional[str] = typer.Option(
+        None, "--from", help="Source format (default: OSI when --to is set)"
+    ),
+    to_format: Optional[str] = typer.Option(
+        None, "--to", help="Target format (default: OSI when --from is set)"
+    ),
     output: Optional[Path] = typer.Option(None, "-o", help="Output file"),
 ):
     """Convert between OSI and vendor formats.
 
-    Direction: 'import' (vendor -> OSI) or 'export' (OSI -> vendor)
+    Specify either --from <vendor> (convert TO OSI) or --to <vendor> (convert FROM OSI).
+    The unset side defaults to OSI.
     """
+    if from_format and to_format:
+        typer.echo("Specify only one of --from or --to, not both.", err=True)
+        raise typer.Exit(1)
+    if not from_format and not to_format:
+        typer.echo("Specify either --from <vendor> or --to <vendor>.", err=True)
+        raise typer.Exit(1)
+
+    target_is_osi = bool(from_format)        # --from: we're importing INTO osi
+    vendor = from_format if target_is_osi else to_format  # the non-osi vendor
+
     converters = discover_converters()
     converter = converters.get(vendor)
     if not converter:
@@ -48,21 +63,18 @@ def convert(
         raise typer.Exit(1)
 
     try:
-        if direction == "export":
-            osi_dict = load_osi_yaml(file)
+        if target_is_osi:
+            raw = input_file.read_text()
+            native = yaml.safe_load(raw) if vendor == "snowflake" else json.loads(raw)
+            result = converter.to_osi(native)
+            result_text = dump_osi_yaml(result)
+        else:
+            osi_dict = load_osi_yaml(input_file)
             result = converter.from_osi(osi_dict)
             if vendor == "gooddata":
                 result_text = json.dumps(result, indent=2)
             else:
                 result_text = yaml.dump(result, sort_keys=False, default_flow_style=False)
-        elif direction == "import":
-            raw = file.read_text()
-            native = yaml.safe_load(raw) if vendor == "snowflake" else json.loads(raw)
-            result = converter.to_osi(native)
-            result_text = dump_osi_yaml(result)
-        else:
-            typer.echo("Direction must be 'import' or 'export'", err=True)
-            raise typer.Exit(1)
 
         if output:
             output.write_text(result_text)

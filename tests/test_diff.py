@@ -1,5 +1,5 @@
 import pytest
-from osi_core.models import ResolvedModel, SemanticModel, Dataset, Field, Metric
+from osi_core.models import OsiModel, SemanticModel, Dataset, Field, Metric
 from osi_core.models.types import DialectExpr, DialectExpression, Dialect
 from osi_core.diff import ModelDiff, DiffResult
 
@@ -37,7 +37,7 @@ class TestModelDiff:
             metrics=metrics,
             relationships=[],
         )
-        return ResolvedModel(
+        return OsiModel(
             name=name,
             semantic_models=[sm],
         )

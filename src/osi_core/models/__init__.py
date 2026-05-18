@@ -1,3 +1,3 @@
-from .resolved import ResolvedModel, SemanticModel, Dataset, Field, Metric, Relationship
+from .osi_model import OsiModel, SemanticModel, Dataset, Field, Metric, Relationship
 
-__all__ = ["ResolvedModel", "SemanticModel", "Dataset", "Field", "Metric", "Relationship"]
+__all__ = ["OsiModel", "SemanticModel", "Dataset", "Field", "Metric", "Relationship"]

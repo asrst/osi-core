@@ -8,7 +8,7 @@ from osi_core.serializer import (
     load_osi_model,
     load_osi_yaml,
 )
-from osi_core.models import ResolvedModel, SemanticModel, Dataset, Field, Metric
+from osi_core.models import OsiModel, SemanticModel, Dataset, Field, Metric
 from osi_core.models.types import DialectExpr, DialectExpression, Dialect, Dimension
 
 
@@ -48,7 +48,7 @@ def test_load_json_string():
 def test_load_osi_model_from_yaml():
     fixture = FIXTURES / "osi" / "sample.yaml"
     model = load_osi_model(fixture)
-    assert isinstance(model, ResolvedModel)
+    assert isinstance(model, OsiModel)
     assert model.osi_spec_version == "0.1.1"
     assert len(model.semantic_models) == 1
     sm = model.semantic_models[0]

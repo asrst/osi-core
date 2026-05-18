@@ -11,6 +11,8 @@ from .types import (
 
 
 class Metric(BaseModel):
+    """A computed metric defined over one or more datasets."""
+
     name: str
     expression: DialectExpression
     description: Optional[str] = None
@@ -19,6 +21,8 @@ class Metric(BaseModel):
 
 
 class Field(BaseModel):
+    """A column or computed field within a dataset."""
+
     name: str
     expression: DialectExpression
     dimension: Optional[Dimension] = None
@@ -29,6 +33,8 @@ class Field(BaseModel):
 
 
 class Dataset(BaseModel):
+    """A logical table or view that groups related fields."""
+
     name: str
     source: str
     primary_key: List[str] = []
@@ -40,6 +46,8 @@ class Dataset(BaseModel):
 
 
 class Relationship(BaseModel):
+    """A join relationship between two datasets."""
+
     name: str
     from_dataset: str
     to_dataset: str
@@ -50,6 +58,8 @@ class Relationship(BaseModel):
 
 
 class SemanticModel(BaseModel):
+    """A named semantic model containing datasets, relationships, and metrics."""
+
     name: str
     description: Optional[str] = None
     datasets: List[Dataset] = []
@@ -59,7 +69,13 @@ class SemanticModel(BaseModel):
     ai_context: Optional[AIContext] = None
 
 
-class ResolvedModel(BaseModel):
+class OsiModel(BaseModel):
+    """Top-level OSI model document.
+
+    Represents a parsed OSI specification file, containing one or more
+    semantic models along with metadata such as spec version and custom extensions.
+    """
+
     osi_spec_version: str = "0.1.1"
     name: str
     description: Optional[str] = None
@@ -71,5 +87,5 @@ class ResolvedModel(BaseModel):
         return self.model_dump_json(indent=2)
 
     @classmethod
-    def from_json(cls, json_str: str) -> "ResolvedModel":
+    def from_json(cls, json_str: str) -> "OsiModel":
         return cls.model_validate_json(json_str)

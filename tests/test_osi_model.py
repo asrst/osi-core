@@ -1,18 +1,18 @@
 import pytest
-from osi_core.models import ResolvedModel, SemanticModel, Dataset, Field, Metric, Relationship
+from osi_core.models import OsiModel, SemanticModel, Dataset, Field, Metric, Relationship
 from osi_core.models.types import DialectExpr, DialectExpression, Dialect, Dimension
 
 
-class TestResolvedModel:
+class TestOsiModel:
     def test_default_spec_version(self):
-        model = ResolvedModel(
+        model = OsiModel(
             name="test",
             semantic_models=[],
         )
         assert model.osi_spec_version == "0.1.1"
 
     def test_custom_spec_version(self):
-        model = ResolvedModel(
+        model = OsiModel(
             osi_spec_version="0.2.0",
             name="test",
             semantic_models=[],
@@ -21,7 +21,7 @@ class TestResolvedModel:
 
     def test_semantic_models_field(self):
         sm = SemanticModel(name="sales", datasets=[], metrics=[])
-        model = ResolvedModel(
+        model = OsiModel(
             name="test",
             semantic_models=[sm],
         )
@@ -29,7 +29,7 @@ class TestResolvedModel:
         assert model.semantic_models[0].name == "sales"
 
     def test_to_json(self):
-        model = ResolvedModel(
+        model = OsiModel(
             name="test",
             semantic_models=[],
         )
@@ -38,12 +38,12 @@ class TestResolvedModel:
         assert "0.1.1" in json_str
 
     def test_from_json(self):
-        original = ResolvedModel(
+        original = OsiModel(
             name="test",
             semantic_models=[],
         )
         json_str = original.to_json()
-        restored = ResolvedModel.from_json(json_str)
+        restored = OsiModel.from_json(json_str)
         assert original == restored
 
 

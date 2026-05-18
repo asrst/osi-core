@@ -1,5 +1,5 @@
 from .models import (
-    ResolvedModel,
+    OsiModel,
     SemanticModel,
     Dataset,
     Field,
@@ -21,7 +21,7 @@ from .converters import BaseConverter, discover_converters
 from .dialects import DIALECT_MAP, select_dialect
 
 __all__ = [
-    "ResolvedModel",
+    "OsiModel",
     "SemanticModel",
     "Dataset",
     "Field",

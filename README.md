@@ -26,17 +26,22 @@ uv sync
 
 ```bash
 # Validate an OSI YAML file
-osi-core validate metrics.yaml --format osi
+osi validate metrics.yaml
 
-# Convert between formats
-osi-core convert snowflake export metrics.yaml -o snowflake_output.yaml
-osi-core convert gooddata export osi_tpcds.yaml -o gooddata_output.json
+# Convert OSI → Snowflake
+osi convert -i metrics.yaml --to snowflake -o snowflake_output.yaml
+
+# Convert Snowflake → OSI
+osi convert -i snowflake_model.yaml --from snowflake -o osi_output.yaml
+
+# Convert OSI → GoodData
+osi convert -i osi_model.yaml --to gooddata -o gooddata_output.json
 
 # Diff two model files
-osi-core diff old.yaml new.yaml
+osi diff old.yaml new.yaml
 
 # List available converters
-osi-core list-converters
+osi list-converters
 ```
 
 ## Development

@@ -7,7 +7,7 @@ import json
 import yaml
 from pydantic import BaseModel
 
-from .models import ResolvedModel, SemanticModel, Dataset, Field, Metric, Relationship
+from .models import OsiModel, SemanticModel, Dataset, Field, Metric, Relationship
 from .models.types import (
     AIContext,
     CustomExtension,
@@ -69,14 +69,14 @@ def dump_osi_yaml(data: Any, *, sort_keys: bool = False) -> str:
     return yaml.dump(data, default_flow_style=False, sort_keys=sort_keys)
 
 
-def load_osi_model(source: Union[Path, str]) -> ResolvedModel:
-    """Load OSI YAML and parse into a ResolvedModel in one step."""
+def load_osi_model(source: Union[Path, str]) -> OsiModel:
+    """Load OSI YAML and parse into an OsiModel in one step."""
     raw = load_osi_yaml(source)
     return _resolve(raw)
 
 
-def dump_osi_model(model: ResolvedModel) -> str:
-    """Serialize a ResolvedModel to OSI YAML."""
+def dump_osi_model(model: OsiModel) -> str:
+    """Serialize an OsiModel to OSI YAML."""
     data: dict[str, Any] = {
         "version": model.osi_spec_version,
         "semantic_model": [],
@@ -164,12 +164,12 @@ def dump_osi_model(model: ResolvedModel) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Internal helpers: resolve raw dict -> ResolvedModel
+# Internal helpers: resolve raw dict -> OsiModel
 # ---------------------------------------------------------------------------
 
 
-def _resolve(raw: dict) -> ResolvedModel:
-    """Map OSI raw dict to ResolvedModel."""
+def _resolve(raw: dict) -> OsiModel:
+    """Map OSI raw dict to OsiModel."""
     if "semantic_model" in raw:
         if isinstance(raw["semantic_model"], list) and len(raw["semantic_model"]) > 0:
             first_sm = raw["semantic_model"][0]
@@ -180,7 +180,7 @@ def _resolve(raw: dict) -> ResolvedModel:
     return _resolve_flat_format(raw)
 
 
-def _resolve_osi_format(raw: dict) -> ResolvedModel:
+def _resolve_osi_format(raw: dict) -> OsiModel:
     version = str(raw.get("version", "0.1.1"))
     semantic_models = []
     for sm_data in raw.get("semantic_model", []):
@@ -199,7 +199,7 @@ def _resolve_osi_format(raw: dict) -> ResolvedModel:
             custom_extensions=_resolve_custom_extensions(sm_data.get("custom_extensions", [])),
         ))
 
-    return ResolvedModel(
+    return OsiModel(
         osi_spec_version=version,
         name=raw.get("name") or (semantic_models[0].name if semantic_models else "unknown"),
         semantic_models=semantic_models,
@@ -208,7 +208,7 @@ def _resolve_osi_format(raw: dict) -> ResolvedModel:
     )
 
 
-def _resolve_flat_format(raw: dict) -> ResolvedModel:
+def _resolve_flat_format(raw: dict) -> OsiModel:
     datasets = []
     for ds_data in raw.get("datasets", []):
         fields = []
@@ -268,7 +268,7 @@ def _resolve_flat_format(raw: dict) -> ResolvedModel:
         metrics=metrics,
     )
 
-    return ResolvedModel(
+    return OsiModel(
         osi_spec_version=str(raw.get("version", "0.1.1")),
         name=raw.get("name", "unknown"),
         semantic_models=[sm],
@@ -381,7 +381,7 @@ def _resolve_custom_extensions(ext_list: list[dict]) -> list[CustomExtension]:
 
 
 # ---------------------------------------------------------------------------
-# Internal helpers: convert ResolvedModel -> dict
+# Internal helpers: convert OsiModel -> dict
 # ---------------------------------------------------------------------------
 
 
